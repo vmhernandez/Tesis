@@ -100,3 +100,30 @@ def data_insert(value):
     db.commit()
     cur.close()
     return 0
+
+#FUNCION PARA VACIAR LAS LECTURAS DE LA BASE DE DATOS
+def drop_data():
+    db=conectDb()
+    cur=db.cursor()
+    cur.execute("DELETE FROM lectura")
+    db.commit()
+    cur.close()
+    return 0
+
+#FUNCION PARA ACTUALIZAR LOS ANGULOS EN LA BASE DE DATOS
+def update_angle(value):
+    db=conectDb()
+    cur=db.cursor()
+    cur.execute("INSERT INTO servo(servo1min,servo1max,servo2min,servo2max,servo3min,servo3max,servo4min,servo4max) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",(value[0],value[1],value[2],value[3],value[4],value[5],value[6],value[7]))
+    db.commit()
+    cur.close()
+    return 0
+
+#FUNCION PARA ELIMINAR EL ULTIMO ANGULO EN LA BASE DE DATOS
+def drop_last_angle():
+    db=conectDb()
+    cur=db.cursor()
+    cur.execute("DELETE FROM servo WHERE fecha=(SELECT MAX(FECHA) FROM servo)")
+    db.commit()
+    cur.close()
+    return 0
