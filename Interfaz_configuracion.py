@@ -1,4 +1,4 @@
-from Libreria_tesis import update_angle,drop_data,angle_extract,update_angle,drop_last_angle
+from Libreria_tesis1 import update_angle,drop_data,angle_extract,update_angle,drop_last_angle,samples_counter,conectDb,export_data_to_xls
 
 def close():
     exit()
@@ -41,19 +41,25 @@ def delete():
 def delete_angle():
     print("Eliminar ultimo angulo")
     drop_last_angle()
+
+
+#####CORREGIR######
+def export():
+    export_data_to_xls()
     
 options ={0: close,
           1: update,
           2: delete,
-          3: delete_angle
+          3: delete_angle,
+          4: export
     }
 
 def menu():
     op=1
-    while(op<2 or op>1):
-        print("0->Close\n1->Update Servo Angle\n2->Delete Samples\n3->Delete Last Angle")
+    while(op<4 or op>0):
+        print("0->Close\n1->Update Servo Angle\n2->Delete Samples\n3->Delete Last Angle\n4->Export to .XLS")
         op = int(input())
-        if(op>=0 and op<=3):
+        if(op>=0 and op<=4):
             options[op]()
         
     

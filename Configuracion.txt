@@ -1,0 +1,31 @@
+sudo date -s "22 MARCH 2018 16:46:00"
+
+Desde el terminal
+	python3 Comunicacion.py
+	python3 Interfaz_configuracion.py
+
+PCA9685
+	GND(in)->Naranjo (USB)
+	5V(in)->Rojo(USB)
+ARDUINO
+	GND(out)->PCA9685->GND(in)
+	5V(out)->PCA9685->VCC(in)
+SERVO
+	GND(in)->Cafe
+	5V(in)->Rojo
+	SGN(in)->Naranjo
+
+	2(ARDUINO)->SERVO 1
+	3(ARDUINO)->SERVO 2
+	4(ARDUINO)->SERVO 3
+	5(ARDUINO)->SERVO 4
+
+SENSOR
+	GND(in)->Cafe
+	5V(in)->Rojo
+	DATA(out)->Naranjo
+
+	A0(ARDUINO)->Sensor 1
+	A1(ARDUINO)->Sensor 2
+	A2(ARDUINO)->Sensor 3
+	A3(ARDUINO)->Sensor 4

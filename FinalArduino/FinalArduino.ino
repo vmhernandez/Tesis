@@ -3,7 +3,7 @@
 int Grado1,Grado2,Grado3,Grado4,Sensor1,Sensor2,Sensor3,Sensor4;
 Servo Servo1,Servo2,Servo3,Servo4; //Define los Servos
 
-int a=1,b=2,c=3;
+int a=1,b=2,c=3;//????????????????????????????
 void setup() {
   Servo1.attach(2); //Conecta Servo 1 al puerto 2
   Servo2.attach(3); //Conecta Servo 2 al puerto 3
