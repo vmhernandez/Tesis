@@ -245,6 +245,13 @@ def angle_calculation(data):
     for x in range(0,4):
         angle[x]=int((float(coVar[x])/varX[x])*(data[x]-float(avgX[x]))+float(avgY[x]))
     
+    
+    for x in range(0,4):
+        if(dbangle[x*2]>dbangle[(x*2)+1]):
+            auxangle=dbangle[x*2]
+            dbangle[x*2]=dbangle[(x*2)+1]
+            dbangle[(x*2)+1]=auxangle
+    
     for x in range(0,4):
         if(angle[x]>dbangle[(x*2)+1]):
             angle[x]=dbangle[(x*2)+1]
@@ -345,8 +352,9 @@ def drop_last_angle():
     return 0
 
 ###############Controlador
-def controller(arduinoPort,min,max):
-    
+def controller(arduinoPort):
+    min=[0,0,0,0]
+    max=[0,0,0,0]
     flagCharacter = 'R'
     
     while(True):
@@ -365,10 +373,10 @@ def controller(arduinoPort,min,max):
             getSerialValue3 = arduinoPort.readline()
             getSerialValue4 = arduinoPort.readline()
             
-            print ('\nValor retornado de Arduino 1: %s',int(getSerialValue1))
-            print ('\nValor retornado de Arduino 2: %s',int(getSerialValue2))
-            print ('\nValor retornado de Arduino 3: %s',int(getSerialValue3))
-            print ('\nValor retornado de Arduino 4: %s',int(getSerialValue4))
+            print ('\nSensor 1: %s',int(getSerialValue1))
+            print ('\nSensor 2: %s',int(getSerialValue2))
+            print ('\nSensor 3: %s',int(getSerialValue3))
+            print ('\nSensor 4: %s',int(getSerialValue4))
             
             data= [int(getSerialValue1),int(getSerialValue2),int(getSerialValue3),int(getSerialValue4)]
 
@@ -398,23 +406,29 @@ def controller(arduinoPort,min,max):
             getSerialValue7 = arduinoPort.readline()
             getSerialValue8 = arduinoPort.readline()
             
-            print ('\nValor retornado del grado 1: %s',getSerialValue5)
-            print ('\nValor retornado del grado 2: %s',getSerialValue6)
-            print ('\nValor retornado del grado 3: %s',getSerialValue7)
-            print ('\nValor retornado del grado 4: %s',getSerialValue8)
-            
-    ##        print("Cantidad de muestras almacenadas")
-    ##        
-    ##        samples=samples_counter()
-    ##        
-    ##        print(samples)
+            print ('\nGrado 1: %s',getSerialValue5)
+            print ('\nGrado 2: %s',getSerialValue6)
+            print ('\nGrado 3: %s',getSerialValue7)
+            print ('\nGrado 4: %s',getSerialValue8)
             
         if(samples<2):
             print("ENTRENANDO")
             time.sleep(2)
             angle=angle_extract()
+            
             anglemin=[angle[0],angle[2],angle[4],angle[6]]
             anglemax=[angle[1],angle[3],angle[5],angle[7]]
+            
+            ##############REALIZA UNA LECTURA PREVIA PARA REALIZAR LAS COMPARACIONES POSTERIORES###
+            arduinoPort.write(flagCharacter.encode())
+            getSerialValue1 = arduinoPort.readline()
+            getSerialValue2 = arduinoPort.readline()
+            getSerialValue3 = arduinoPort.readline()
+            getSerialValue4 = arduinoPort.readline()
+        
+            min=[getSerialValue1,getSerialValue2,getSerialValue3,getSerialValue4]
+            max=[getSerialValue1,getSerialValue2,getSerialValue3,getSerialValue4]    
+            
             for i in range(0,4):
                 print(min[i])
                 print(max[i])
@@ -473,5 +487,5 @@ def controller(arduinoPort,min,max):
                 print(min[i])
                 print(max[i])
             print("FIN DEL ENTRENAMIENTO")
-            
+
     return 0

@@ -6,9 +6,6 @@ from Libreria_tesis3 import *
 
 #####################VARIABLES#####################
 
-min=[100,100,100,100]###COMO JUSTIFICO ESTOS NUMEROS???
-max=[300,300,300,300]
-
 #####################PROGRAMA#####################
 
 # Iniciando conexion serial
@@ -21,7 +18,7 @@ arduinoPort = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
 time.sleep(1.8)
 
     
-controller(arduinoPort,min,max)
+controller(arduinoPort)
         
 # Cerrando puerto serial
 arduinoPort.close()
