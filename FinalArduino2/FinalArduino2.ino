@@ -1,6 +1,6 @@
 #include <Servo.h>
 
-int Grado1,Grado2,Grado3,Grado4,Sensor1,Sensor2,Sensor3,Sensor4,det1,det2,det3,det4;
+int Grado1,Grado2,Grado3,Grado4,Sensor1,Sensor2,Sensor3,Sensor4;
 Servo Servo1,Servo2,Servo3,Servo4; //Define los Servos
 
 void setup() {
@@ -37,17 +37,7 @@ void loop() {
         Grado2 = Serial.parseInt();
         Grado3 = Serial.parseInt();
         Grado4 = Serial.parseInt();
-        
-        det1 = Serial.parseInt();
-        det2 = Serial.parseInt();
-        det3 = Serial.parseInt();
-        det4 = Serial.parseInt();
-
-        Grado1 = Grado1-(det1*2*Grado1)
-        Grado2 = Grado2-(det2*2*Grado2)
-        Grado3 = Grado3-(det3*2*Grado3)
-        Grado4 = Grado4-(det4*2*Grado4)
-        
+              
        if (Serial.read()=='\n'){
           
           Servo1.write(Grado1);
