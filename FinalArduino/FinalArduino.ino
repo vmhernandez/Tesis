@@ -43,10 +43,10 @@ void loop() {
         det3 = Serial.parseInt();
         det4 = Serial.parseInt();
 
-        Grado1 = Grado1-(det1*2*Grado1)
-        Grado2 = Grado2-(det2*2*Grado2)
-        Grado3 = Grado3-(det3*2*Grado3)
-        Grado4 = Grado4-(det4*2*Grado4)
+        Grado1 = Grado1-(det1*2*Grado1);
+        Grado2 = Grado2-(det2*2*Grado2);
+        Grado3 = Grado3-(det3*2*Grado3);
+        Grado4 = Grado4-(det4*2*Grado4);
         
        if (Serial.read()=='\n'){
           

@@ -2,9 +2,10 @@ import time
 import serial
  
 # Iniciando conexión serial
-arduinoPort = serial.Serial('COM4', 9600, timeout=1)
+##arduinoPort = serial.Serial('COM4', 9600, timeout=1)
+arduinoPort = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
 flagCharacter = 'R'
-grados ='001,004,005,090\n'
+grados ='001,004,005,090,0,0,0,0\n'
 # Retardo para establecer la conexión serial
 time.sleep(1.8)
 
