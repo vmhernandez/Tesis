@@ -357,116 +357,17 @@ def drop_last_angle():
     
     return 0
 
-#FUNCION PARA EXTRAER LA MEDIANA DE LOS DATOS OBTENIDOS POR LOS SENSORES
-
-def median():
-    
-    median=[0,0,0,0]
+#FUNCION PARA CALCULAR LOS LIMITES INTERNOS DE LOS DATOS MEDIANTE MAD (MEDIAN ABSOLUTE DEVIATION)
+def outlier():
     
     db=conectDb()
     
     cur = db.cursor()
     
-    cur.execute("SELECT median(sensor1),median(sensor2),median(sensor3),median(sensor4) FROM lectura")
+    cur.execute("select median(sensor1)-2.5*median(abs(sensor1 - (select median(sensor1) from lectura))),median(sensor1)+2.5*median(abs(sensor1 - (select median(sensor1) from lectura))),median(sensor2)-2.5*median(abs(sensor2 - (select median(sensor2) from lectura))),median(sensor2)+2.5*median(abs(sensor2 - (select median(sensor2) from lectura))),median(sensor3)-2.5*median(abs(sensor3 - (select median(sensor3) from lectura))),median(sensor3)+2.5*median(abs(sensor3 - (select median(sensor3) from lectura))),median(sensor4)-2.5*median(abs(sensor4 - (select median(sensor4) from lectura))),median(sensor4)+2.5*median(abs(sensor4 - (select median(sensor4) from lectura))) from lectura")
     
-    row = cur.fetchone()
-        
-    cur.close()
+    row=cur.fetchone
     
-    for x in range(0,4):
-        
-        median[x]=str(int(row[x]))
-    
-    return median
-
-#FUNCION PARA CALCULAR Q1
-
-def q1(value):
-    
-    data=[0,0,0,0]
-    
-    db=conectDb()
-    
-    cur = db.cursor()
-    
-    cur.execute("SELECT median(sensor1) FROM lectura WHERE sensor1 <= (%s);", (value[0],))
-
-    row=cur.fetchone()[0]
-    
-    data[0]=row
-    
-    cur.execute("SELECT median(sensor2) FROM lectura WHERE sensor2 <= (%s);", (value[1],))
-
-    row=cur.fetchone()[0]
-    
-    data[1]=row
-    
-    cur.execute("SELECT median(sensor3) FROM lectura WHERE sensor3 <= (%s);", (value[2],))
-
-    row=cur.fetchone()[0]
-    
-    data[2]=row
-    
-    cur.execute("SELECT median(sensor4) FROM lectura WHERE sensor4 <= (%s);", (value[3],))
-
-    row=cur.fetchone()[0]
-    
-    data[3]=row
-    
-    return data
-
-#FUNCION PARA CALCULAR Q3
-
-def q3(value):
-    
-    data=[0,0,0,0]
-    
-    db=conectDb()
-    
-    cur = db.cursor()
-    
-    cur.execute("SELECT median(sensor1) FROM lectura WHERE sensor1 >= (%s);", (value[0],))
-
-    row=cur.fetchone()[0]
-    
-    data[0]=row
-    
-    cur.execute("SELECT median(sensor2) FROM lectura WHERE sensor2 >= (%s);", (value[1],))
-
-    row=cur.fetchone()[0]
-    
-    data[1]=row
-    
-    cur.execute("SELECT median(sensor3) FROM lectura WHERE sensor3 >= (%s);", (value[2],))
-
-    row=cur.fetchone()[0]
-    
-    data[2]=row
-    
-    cur.execute("SELECT median(sensor4) FROM lectura WHERE sensor4 >= (%s);", (value[3],))
-
-    row=cur.fetchone()[0]
-    
-    data[3]=row
-    
-    return data
-
-#FUNCION PARA CALCULAR LOS LIMITES INTERNOS SUPERIORES DE LOS DATOS ALMACENADOS EN LA BASE DE DATOS
-
-def isl():
-        
-    row=[0,0,0,0]
-    
-    Median=median()
-    
-    Q1=q1(Median)
-    
-    Q3=q3(Median)
-    
-    for x in range(0,4):
-        
-        row[x]=Q3[x]+((Q3[x]-Q1[x])*1.5)
-
     return row
 
 ###############Controlador
@@ -498,9 +399,9 @@ def controller(arduinoPort):
             print ('\nSensor 4: %s',int(getSerialValue4))
             
             data= [int(getSerialValue1),int(getSerialValue2),int(getSerialValue3),int(getSerialValue4)]
-            iSl=isl()
+            limits=outlier()
             
-            if(data[0]<=iSl[0] and data[1]<=iSl[1] and data[2]<=iSl[2] and data[2]<=iSl[2] ):
+            if((data[0]>=limits[0] and data[2]>=limits[1] and data[4]>=limits[2] and data[6]>=limits[2]) and  (data[0]<=limits[1] and data[1]<=limits[3] and data[2]<=limits[5] and data[2]<=limits[7])):
                 #Calculo grados
                 
                 val = angle_calculation(data)
@@ -535,31 +436,25 @@ def controller(arduinoPort):
                 
         if(samples<2):
             print("ENTRENANDO")
-            time.sleep(2)
+            
+            time.sleep(1)
+            
             angle=angle_extract()
             
             anglemin=[angle[0],angle[2],angle[4],angle[6]]
             anglemax=[angle[1],angle[3],angle[5],angle[7]]
             
-            ##############REALIZA UNA LECTURA PREVIA PARA REALIZAR LAS COMPARACIONES POSTERIORES###
-            arduinoPort.write(flagCharacter.encode())
-            getSerialValue1 = arduinoPort.readline()
-            getSerialValue2 = arduinoPort.readline()
-            getSerialValue3 = arduinoPort.readline()
-            getSerialValue4 = arduinoPort.readline()
-        
-            min=[getSerialValue1,getSerialValue2,getSerialValue3,getSerialValue4]
-            max=[getSerialValue1,getSerialValue2,getSerialValue3,getSerialValue4]    
+            suma1=[0,0,0,0]
+            suma2=[0,0,0,0]
             
-            for i in range(0,4):
-                print(min[i])
-                print(max[i])
-                print(angle[(2*i)])
-                print(angle[(2*i)+1])
+            min=[0,0,0,0]
+            max=[0,0,0,0]
                 
             print("RELAJAR MUSCULO")
-            time.sleep(2)
-            for x in range(0,15):##COMO JUSTIFICO ESTE ENTRENAMIENTO????
+            
+            time.sleep(1)
+            
+            for x in range(0,101):##COMO JUSTIFICO ESTE ENTRENAMIENTO????
                 
                 arduinoPort.write(flagCharacter.encode())
 
@@ -572,16 +467,17 @@ def controller(arduinoPort):
                 print ('\nValor retornado de Arduino 2: %s',int(getSerialValue2))
                 print ('\nValor retornado de Arduino 3: %s',int(getSerialValue3))
                 print ('\nValor retornado de Arduino 4: %s',int(getSerialValue4))
-            
-                data= [int(getSerialValue1),int(getSerialValue2),int(getSerialValue3),int(getSerialValue4)]
-                for i in range(0,4):
-                    if(data[i]<min[i]):
-                        min[i]=data[i]
-                time.sleep(1)
+                
+                suma1[0]=suma1[0]+int(getSerialValue1)
+                suma1[1]=suma1[1]+int(getSerialValue2)
+                suma1[2]=suma1[2]+int(getSerialValue3)
+                suma1[3]=suma1[3]+int(getSerialValue4)
                 
             print("CONTRAER MUSCULO")
-            time.sleep(2)
-            for x in range(0,15):##COMO JUSTIFICO ESTE ENTRENAMIENTO????
+            
+            time.sleep(1)
+            
+            for x in range(0,101):##COMO JUSTIFICO ESTE ENTRENAMIENTO????
                 
                 arduinoPort.write(flagCharacter.encode())
 
@@ -595,19 +491,20 @@ def controller(arduinoPort):
                 print ('\nValor retornado de Arduino 3: %s',int(getSerialValue3))
                 print ('\nValor retornado de Arduino 4: %s',int(getSerialValue4))
             
-                data= [int(getSerialValue1),int(getSerialValue2),int(getSerialValue3),int(getSerialValue4)]
-                for i in range(0,4):
-                    if(data[i]>max[i]):
-                        max[i]=data[i]
-                time.sleep(0.5)        
-            
+                suma2[0]=suma2[0]+int(getSerialValue1)
+                suma2[1]=suma2[1]+int(getSerialValue2)
+                suma2[2]=suma2[2]+int(getSerialValue3)
+                suma2[3]=suma2[3]+int(getSerialValue4)
             ###############GUARDAR EN LA BASE DE DATOS#########
-            data_insert(min,anglemin)
-            data_insert(max,anglemax)
-            
+            for x in range(0,4):
+                min[x]=suma1[x]/101
+                max[x]=suma2[x]/101
+                
             for i in range(0,4):
                 print(min[i])
                 print(max[i])
             print("FIN DEL ENTRENAMIENTO")
 
+            data_insert(min,anglemin)
+            data_insert(max,anglemax)
     return 0

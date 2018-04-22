@@ -10,7 +10,6 @@ import time
 #FUNCION PARA DARLE FORMATO A LOS DATOS ANTES DE ENVIARLOS AL ARDUINO
 def angle_formatting(angle):
     
-    numero=[0,0,0,0]
     for x in range(0,4):
         if(int(angle[x])<10):
         
@@ -21,15 +20,10 @@ def angle_formatting(angle):
             if(int(angle[x])<100):
             
                 angle[x]="0"+str(angle[x])
-
-    for x in range(0,4):
-        if(int(angle[x])<0):
-            numero[x]=1
-            angle[x]=angle[x]*(-1)
-
+                  
     e = "\n"
     
-    Format = str(angle[0])+","+str(angle[1])+","+str(angle[2])+","+str(angle[3])+","+str(numero[0])+","+str(numero[1])+","+str(numero[2])+","+str(numero[3])+e
+    Format = str(angle[0])+","+str(angle[1])+","+str(angle[2])+","+str(angle[3])+e
     
     return Format
 
@@ -357,123 +351,10 @@ def drop_last_angle():
     
     return 0
 
-#FUNCION PARA EXTRAER LA MEDIANA DE LOS DATOS OBTENIDOS POR LOS SENSORES
-
-def median():
-    
-    median=[0,0,0,0]
-    
-    db=conectDb()
-    
-    cur = db.cursor()
-    
-    cur.execute("SELECT median(sensor1),median(sensor2),median(sensor3),median(sensor4) FROM lectura")
-    
-    row = cur.fetchone()
-        
-    cur.close()
-    
-    for x in range(0,4):
-        
-        median[x]=str(int(row[x]))
-    
-    return median
-
-#FUNCION PARA CALCULAR Q1
-
-def q1(value):
-    
-    data=[0,0,0,0]
-    
-    db=conectDb()
-    
-    cur = db.cursor()
-    
-    cur.execute("SELECT median(sensor1) FROM lectura WHERE sensor1 <= (%s);", (value[0],))
-
-    row=cur.fetchone()[0]
-    
-    data[0]=row
-    
-    cur.execute("SELECT median(sensor2) FROM lectura WHERE sensor2 <= (%s);", (value[1],))
-
-    row=cur.fetchone()[0]
-    
-    data[1]=row
-    
-    cur.execute("SELECT median(sensor3) FROM lectura WHERE sensor3 <= (%s);", (value[2],))
-
-    row=cur.fetchone()[0]
-    
-    data[2]=row
-    
-    cur.execute("SELECT median(sensor4) FROM lectura WHERE sensor4 <= (%s);", (value[3],))
-
-    row=cur.fetchone()[0]
-    
-    data[3]=row
-    
-    return data
-
-#FUNCION PARA CALCULAR Q3
-
-def q3(value):
-    
-    data=[0,0,0,0]
-    
-    db=conectDb()
-    
-    cur = db.cursor()
-    
-    cur.execute("SELECT median(sensor1) FROM lectura WHERE sensor1 >= (%s);", (value[0],))
-
-    row=cur.fetchone()[0]
-    
-    data[0]=row
-    
-    cur.execute("SELECT median(sensor2) FROM lectura WHERE sensor2 >= (%s);", (value[1],))
-
-    row=cur.fetchone()[0]
-    
-    data[1]=row
-    
-    cur.execute("SELECT median(sensor3) FROM lectura WHERE sensor3 >= (%s);", (value[2],))
-
-    row=cur.fetchone()[0]
-    
-    data[2]=row
-    
-    cur.execute("SELECT median(sensor4) FROM lectura WHERE sensor4 >= (%s);", (value[3],))
-
-    row=cur.fetchone()[0]
-    
-    data[3]=row
-    
-    return data
-
-#FUNCION PARA CALCULAR LOS LIMITES INTERNOS SUPERIORES DE LOS DATOS ALMACENADOS EN LA BASE DE DATOS
-
-def isl():
-        
-    row=[0,0,0,0]
-    
-    Median=median()
-    
-    Q1=q1(Median)
-    
-    Q3=q3(Median)
-    
-    for x in range(0,4):
-        
-        row[x]=Q3[x]+((Q3[x]-Q1[x])*1.5)
-
-    return row
-
 ###############Controlador
 def controller(arduinoPort):
     min=[0,0,0,0]
     max=[0,0,0,0]
-    iSl=[0,0,0,0]
     flagCharacter = 'R'
     
     while(True):
@@ -498,41 +379,38 @@ def controller(arduinoPort):
             print ('\nSensor 4: %s',int(getSerialValue4))
             
             data= [int(getSerialValue1),int(getSerialValue2),int(getSerialValue3),int(getSerialValue4)]
-            iSl=isl()
-            
-            if(data[0]<=iSl[0] and data[1]<=iSl[1] and data[2]<=iSl[2] and data[2]<=iSl[2] ):
-                #Calculo grados
-                
-                val = angle_calculation(data)
-            
-                print ('\nGrado 1: %s',int(val[0]))
-                print ('\nGrado 2: %s',int(val[1]))
-                print ('\nGrado 3: %s',int(val[2]))
-                print ('\nGrado 4: %s',int(val[3]))
-                
-                #Insertar datos en la Base de datos
-                
-                data_insert(data,val)
-                
-                #Formateo de datos para enviar al Arduino
 
-                angle = angle_formatting(val)
-                
-                #Enviar datos al Arduino
+            #Calculo grados
+            
+            val = angle_calculation(data)
+        
+            print ('\nGrado 1: %s',int(val[0]))
+            print ('\nGrado 2: %s',int(val[1]))
+            print ('\nGrado 3: %s',int(val[2]))
+            print ('\nGrado 4: %s',int(val[3]))
+            
+            #Insertar datos en la Base de datos
+            
+            data_insert(data,val)
+            
+            #Formateo de datos para enviar al Arduino
 
-                arduinoPort.write(angle.encode())
-             
-                getSerialValue5 = arduinoPort.readline()
-                getSerialValue6 = arduinoPort.readline()
-                getSerialValue7 = arduinoPort.readline()
-                getSerialValue8 = arduinoPort.readline()
-                
-                print ('\nGrado 1: %s',getSerialValue5)
-                print ('\nGrado 2: %s',getSerialValue6)
-                print ('\nGrado 3: %s',getSerialValue7)
-                print ('\nGrado 4: %s',getSerialValue8)
-            ##AQUI IRIA LO QUE DEBE PASAR EN EL MOMENTO EN QUE LAS LECTURAS DE LOS SENSORES SEAN MAYORES A LOS LIMITES INTERNOS SUPERIORES
-                
+            angle = angle_formatting(val)
+            
+            #Enviar datos al Arduino
+
+            arduinoPort.write(angle.encode())
+         
+            getSerialValue5 = arduinoPort.readline()
+            getSerialValue6 = arduinoPort.readline()
+            getSerialValue7 = arduinoPort.readline()
+            getSerialValue8 = arduinoPort.readline()
+            
+            print ('\nGrado 1: %s',getSerialValue5)
+            print ('\nGrado 2: %s',getSerialValue6)
+            print ('\nGrado 3: %s',getSerialValue7)
+            print ('\nGrado 4: %s',getSerialValue8)
+            
         if(samples<2):
             print("ENTRENANDO")
             time.sleep(2)
