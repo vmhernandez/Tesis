@@ -365,16 +365,22 @@ def outlier():
     cur = db.cursor()
     
     cur.execute("select median(sensor1)-2.5*median(abs(sensor1 - (select median(sensor1) from lectura))),median(sensor1)+2.5*median(abs(sensor1 - (select median(sensor1) from lectura))),median(sensor2)-2.5*median(abs(sensor2 - (select median(sensor2) from lectura))),median(sensor2)+2.5*median(abs(sensor2 - (select median(sensor2) from lectura))),median(sensor3)-2.5*median(abs(sensor3 - (select median(sensor3) from lectura))),median(sensor3)+2.5*median(abs(sensor3 - (select median(sensor3) from lectura))),median(sensor4)-2.5*median(abs(sensor4 - (select median(sensor4) from lectura))),median(sensor4)+2.5*median(abs(sensor4 - (select median(sensor4) from lectura))) from lectura")
+
+    for row in cur.fetchall():
     
-    row=cur.fetchone
+        print()
+        
+    cur.close()
     
     return row
 
 ###############Controlador
 def controller(arduinoPort):
+
     min=[0,0,0,0]
     max=[0,0,0,0]
-    iSl=[0,0,0,0]
+    limits=[0,0,0,0,0,0,0,0]
+
     flagCharacter = 'R'
     
     while(True):
@@ -400,8 +406,11 @@ def controller(arduinoPort):
             
             data= [int(getSerialValue1),int(getSerialValue2),int(getSerialValue3),int(getSerialValue4)]
             limits=outlier()
-            
-            if((data[0]>=limits[0] and data[2]>=limits[1] and data[4]>=limits[2] and data[6]>=limits[2]) and  (data[0]<=limits[1] and data[1]<=limits[3] and data[2]<=limits[5] and data[2]<=limits[7])):
+
+            for x in range(0,8):
+                print(limits[x])
+                
+            if(data[0]>=limits[0] and data[0]<=limits[1] and data[1]>=limits[2] and data[1]<=limits[3] and data[2]>=limits[4] and data[2]<=limits[5] and data[3]>=limits[6] and data[3]<=limits[7]):
                 #Calculo grados
                 
                 val = angle_calculation(data)
