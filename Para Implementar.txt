@@ -1,5 +1,5 @@
-Funcion que calcule la mediana al entrenar el sensor 
+Funcion que calcule el promedio al entrenar el sensor -- OK
 
 Funcion que compare la mediana con el promedio para ver cual es más representativo y guardar este
 
-*Funcion que no deje que se guarden datos que superen los limites internos superiores
+Funcion que no deje que se guarden datos que superen los limites internos superiores -- OK

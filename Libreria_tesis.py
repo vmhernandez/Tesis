@@ -493,6 +493,7 @@ def training(arduinoPort,flagCharacter):
 
     data_insert(min,anglemin)
     data_insert(max,anglemax)
+    ####REVISAR SI UTILIZAR MEDIANA AL REALIZAR EL ENTRENAMIENTO    
     
 ##FUNCION QUE REALIZA LA EJECUCION DEL CONTROLADOR 
 def execution(arduinoPort,flagCharacter,dataFilter):
@@ -512,12 +513,13 @@ def execution(arduinoPort,flagCharacter,dataFilter):
             
     data= [int(getSerialValue1),int(getSerialValue2),int(getSerialValue3),int(getSerialValue4)]
 
+    avgData = avgfilter(dataFilter,data)
+        
     limits=outlier()
 
     ##if(data[0]>=limits[0] and data[0]<=limits[1] and data[1]>=limits[2] and data[1]<=limits[3] and data[2]>=limits[4] and data[2]<=limits[5] and data[3]>=limits[6] and data[3]<=limits[7]):
-    if(data[0]>=limits[0] and data[0]<=limits[1]):
-        
-        avgData = avgfilter(dataFilter,data)
+    if(avgData[0]>=limits[0] and avgData[0]<=limits[1]):
+
         dataFilter = nfilter(dataFilter, data)        
         val = angle_calculation(avgData)         
         
@@ -525,6 +527,7 @@ def execution(arduinoPort,flagCharacter,dataFilter):
         print ('\nGrado 2: %s',int(val[1]))
         print ('\nGrado 3: %s',int(val[2]))
         print ('\nGrado 4: %s',int(val[3]))     
+
         data_insert(avgData,val)
         angle = angle_formatting(val)
         arduinoPort.write(angle.encode())
@@ -538,7 +541,7 @@ def execution(arduinoPort,flagCharacter,dataFilter):
         print ('\nGrado 2: %s',getSerialValue6)
         print ('\nGrado 3: %s',getSerialValue7)
         print ('\nGrado 4: %s',getSerialValue8)
-#### AQUI REVISAR LA EJECUCION DEL FILTRO LUEGO DEL ANALISIS DE LOS OUTLIERS        
+    #### AQUI REVISAR LA EJECUCION DEL FILTRO LUEGO DEL ANALISIS DE LOS OUTLIERS        
     return dataFilter
 
 ###############Controlador
