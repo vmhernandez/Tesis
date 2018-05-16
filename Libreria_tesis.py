@@ -538,7 +538,7 @@ def execution(arduinoPort,flagCharacter,dataFilter):
         print ('\nGrado 2: %s',getSerialValue6)
         print ('\nGrado 3: %s',getSerialValue7)
         print ('\nGrado 4: %s',getSerialValue8)
-        
+#### AQUI REVISAR LA EJECUCION DEL FILTRO LUEGO DEL ANALISIS DE LOS OUTLIERS        
     return dataFilter
 
 ###############Controlador

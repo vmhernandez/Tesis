@@ -1,4 +1,4 @@
-from Libreria_tesis3_b import update_angle,drop_data,angle_extract,update_angle,drop_last_angle,samples_counter,conectDb,export_data_to_xls
+from Libreria_tesis import update_angle,drop_data,angle_extract,update_angle,drop_last_angle,samples_counter,conectDb,export_data_to_xls
 
 def close():
     exit()
