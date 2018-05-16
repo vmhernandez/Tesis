@@ -12,6 +12,10 @@ def angle_formatting(angle):
     
     numero=[0,0,0,0]
     for x in range(0,4):
+        if(int(angle[x])<0):
+            numero[x]=1
+            angle[x]=angle[x]*(-1)
+    for x in range(0,4):
         if(int(angle[x])<10):
         
             angle[x] = "00"+str(angle[x])
@@ -21,11 +25,6 @@ def angle_formatting(angle):
             if(int(angle[x])<100):
             
                 angle[x]="0"+str(angle[x])
-
-    for x in range(0,4):
-        if(int(angle[x])<0):
-            numero[x]=1
-            angle[x]=angle[x]*(-1)
 
     e = "\n"
     
@@ -374,146 +373,193 @@ def outlier():
     
     return row
 
+##FUNCION PARA RECOLECTAR DATOS PARA EL FILTRO
+def collectData(arduinoPort,flagCharacter):
+    data = [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]]
+    
+    for x in range(0,9):
+        arduinoPort.write(flagCharacter.encode())
+        data[0][x] = arduinoPort.readline()
+        data[1][x] = arduinoPort.readline()
+        data[2][x] = arduinoPort.readline()
+        data[3][x] = arduinoPort.readline()
+    
+    return data
+
+##FUNCION DE FILTRO DE PROMEDIO
+def avgfilter(data,number):
+    avg=[0,0,0,0]
+    sum=[0,0,0,0]
+    for x in range (0,4):
+        for y in range(0,9):
+            sum[x]=sum[x]+data[x][y]
+        sum[x]=sum[x]+number[x]
+        avg[x]=sum[x]/10
+    return avg
+
+##FUNCION PARA MOVER LOS DATOS PARA EL SIGUIENTE FILTRO
+def nfilter(data, number):
+    ndata=[[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]]
+    for x in range (0,4):
+        for y in range(0,8):
+            ndata[x][y]=data[x][y+1]
+        ndata[x][8]=number[x]
+    return ndata
+
+##FUNCION DE ENTRENAMIENTO
+def training(arduinoPort,flagCharacter):
+    
+    print("ENTRENANDO")
+            
+    angle=angle_extract()
+            
+    anglemin=[angle[0],angle[2],angle[4],angle[6]]
+    anglemax=[angle[1],angle[3],angle[5],angle[7]]
+            
+    suma1=[0,0,0,0]
+    suma2=[0,0,0,0]
+    
+    min=[0,0,0,0]
+    max=[0,0,0,0]
+    
+    arduinoPort.write(flagCharacter.encode())
+
+    getSerialValue1 = arduinoPort.readline()
+    getSerialValue2 = arduinoPort.readline()
+    getSerialValue3 = arduinoPort.readline()
+    getSerialValue4 = arduinoPort.readline()
+    
+    min=[int(getSerialValue1),int(getSerialValue2),int(getSerialValue3),int(getSerialValue4)]
+    max=[int(getSerialValue1),int(getSerialValue2),int(getSerialValue3),int(getSerialValue4)]
+    
+    print("RELAJAR MUSCULO")
+            
+    time.sleep(3)
+            
+    for x in range(0,101):
+                
+        arduinoPort.write(flagCharacter.encode())
+
+        getSerialValue1 = arduinoPort.readline()
+        getSerialValue2 = arduinoPort.readline()
+        getSerialValue3 = arduinoPort.readline()
+        getSerialValue4 = arduinoPort.readline()
+        
+        print ('\nValor retornado de Arduino 1: %s',int(getSerialValue1))
+        print ('\nValor retornado de Arduino 2: %s',int(getSerialValue2))
+        print ('\nValor retornado de Arduino 3: %s',int(getSerialValue3))
+        print ('\nValor retornado de Arduino 4: %s',int(getSerialValue4))
+                
+        suma1[0]=suma1[0]+int(getSerialValue1)
+        suma1[1]=suma1[1]+int(getSerialValue2)
+        suma1[2]=suma1[2]+int(getSerialValue3)
+        suma1[3]=suma1[3]+int(getSerialValue4)
+                   
+        time.sleep(0.1)
+                
+    print("CONTRAER MUSCULO")
+            
+    time.sleep(3)
+            
+    for x in range(0,101):
+                
+        arduinoPort.write(flagCharacter.encode())
+
+        getSerialValue1 = arduinoPort.readline()
+        getSerialValue2 = arduinoPort.readline()
+        getSerialValue3 = arduinoPort.readline()
+        getSerialValue4 = arduinoPort.readline()
+        
+        print ('\nValor retornado de Arduino 1: %s',int(getSerialValue1))
+        print ('\nValor retornado de Arduino 2: %s',int(getSerialValue2))
+        print ('\nValor retornado de Arduino 3: %s',int(getSerialValue3))
+        print ('\nValor retornado de Arduino 4: %s',int(getSerialValue4))
+            
+        suma2[0]=suma2[0]+int(getSerialValue1)
+        suma2[1]=suma2[1]+int(getSerialValue2)
+        suma2[2]=suma2[2]+int(getSerialValue3)
+        suma2[3]=suma2[3]+int(getSerialValue4)
+     
+        time.sleep(0.1)
+                
+    for x in range(0,4):
+        min[x]=suma1[x]/101
+        max[x]=suma2[x]/101
+                
+    for i in range(0,4):
+        print(min[i])
+        print(max[i])
+    print("FIN DEL ENTRENAMIENTO")
+
+    data_insert(min,anglemin)
+    data_insert(max,anglemax)
+    
+##FUNCION QUE REALIZA LA EJECUCION DEL CONTROLADOR 
+def execution(arduinoPort,flagCharacter,dataFilter):
+    
+    avgData = [0,0,0,0]
+    arduinoPort.write(flagCharacter.encode())
+
+    getSerialValue1 = arduinoPort.readline()
+    getSerialValue2 = arduinoPort.readline()
+    getSerialValue3 = arduinoPort.readline()
+    getSerialValue4 = arduinoPort.readline()
+            
+    print ('\nSensor 1: %s',int(getSerialValue1))
+    print ('\nSensor 2: %s',int(getSerialValue2))
+    print ('\nSensor 3: %s',int(getSerialValue3))
+    print ('\nSensor 4: %s',int(getSerialValue4))
+            
+    data= [int(getSerialValue1),int(getSerialValue2),int(getSerialValue3),int(getSerialValue4)]
+
+    limits=outlier()
+
+    ##if(data[0]>=limits[0] and data[0]<=limits[1] and data[1]>=limits[2] and data[1]<=limits[3] and data[2]>=limits[4] and data[2]<=limits[5] and data[3]>=limits[6] and data[3]<=limits[7]):
+    if(data[0]>=limits[0] and data[0]<=limits[1]):
+        
+        avgData = avgfilter(dataFilter,data)
+        dataFilter = nfilter(dataFilter, data)        
+        val = angle_calculation(avgData)         
+        
+        print ('\nGrado 1: %s',int(val[0]))
+        print ('\nGrado 2: %s',int(val[1]))
+        print ('\nGrado 3: %s',int(val[2]))
+        print ('\nGrado 4: %s',int(val[3]))     
+        data_insert(avgData,val)
+        angle = angle_formatting(val)
+        arduinoPort.write(angle.encode())
+             
+        getSerialValue5 = arduinoPort.readline()
+        getSerialValue6 = arduinoPort.readline()
+        getSerialValue7 = arduinoPort.readline()
+        getSerialValue8 = arduinoPort.readline()
+                
+        print ('\nGrado 1: %s',getSerialValue5)
+        print ('\nGrado 2: %s',getSerialValue6)
+        print ('\nGrado 3: %s',getSerialValue7)
+        print ('\nGrado 4: %s',getSerialValue8)
+        
+    return dataFilter
+
 ###############Controlador
 def controller(arduinoPort):
 
-    min=[0,0,0,0]
-    max=[0,0,0,0]
     limits=[0,0,0,0,0,0,0,0]
-
+    dataFilter = [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]]
+    
     flagCharacter = 'R'
     
     while(True):
-    
+        
         samples=samples_counter()
         
         print("Cantidad de muestras almacenadas")   
         print(samples)
        
         if(samples>=2):
-            
-            arduinoPort.write(flagCharacter.encode())
-
-            getSerialValue1 = arduinoPort.readline()
-            getSerialValue2 = arduinoPort.readline()
-            getSerialValue3 = arduinoPort.readline()
-            getSerialValue4 = arduinoPort.readline()
-            
-            print ('\nSensor 1: %s',int(getSerialValue1))
-            print ('\nSensor 2: %s',int(getSerialValue2))
-            print ('\nSensor 3: %s',int(getSerialValue3))
-            print ('\nSensor 4: %s',int(getSerialValue4))
-            
-            data= [int(getSerialValue1),int(getSerialValue2),int(getSerialValue3),int(getSerialValue4)]
-            limits=outlier()
-
-            for x in range(0,8):
-                print(limits[x])
-                
-            if(data[0]>=limits[0] and data[0]<=limits[1] and data[1]>=limits[2] and data[1]<=limits[3] and data[2]>=limits[4] and data[2]<=limits[5] and data[3]>=limits[6] and data[3]<=limits[7]):
-                #Calculo grados
-                
-                val = angle_calculation(data)
-            
-                print ('\nGrado 1: %s',int(val[0]))
-                print ('\nGrado 2: %s',int(val[1]))
-                print ('\nGrado 3: %s',int(val[2]))
-                print ('\nGrado 4: %s',int(val[3]))
-                
-                #Insertar datos en la Base de datos
-                
-                data_insert(data,val)
-                
-                #Formateo de datos para enviar al Arduino
-
-                angle = angle_formatting(val)
-                
-                #Enviar datos al Arduino
-
-                arduinoPort.write(angle.encode())
-             
-                getSerialValue5 = arduinoPort.readline()
-                getSerialValue6 = arduinoPort.readline()
-                getSerialValue7 = arduinoPort.readline()
-                getSerialValue8 = arduinoPort.readline()
-                
-                print ('\nGrado 1: %s',getSerialValue5)
-                print ('\nGrado 2: %s',getSerialValue6)
-                print ('\nGrado 3: %s',getSerialValue7)
-                print ('\nGrado 4: %s',getSerialValue8)
-            ##AQUI IRIA LO QUE DEBE PASAR EN EL MOMENTO EN QUE LAS LECTURAS DE LOS SENSORES SEAN MAYORES A LOS LIMITES INTERNOS SUPERIORES
+            dataFilter = execution(arduinoPort,flagCharacter,dataFilter)    
                 
         if(samples<2):
-            print("ENTRENANDO")
+            training(arduinoPort,flagCharacter)
             
-            time.sleep(1)
-            
-            angle=angle_extract()
-            
-            anglemin=[angle[0],angle[2],angle[4],angle[6]]
-            anglemax=[angle[1],angle[3],angle[5],angle[7]]
-            
-            suma1=[0,0,0,0]
-            suma2=[0,0,0,0]
-            
-            min=[0,0,0,0]
-            max=[0,0,0,0]
-                
-            print("RELAJAR MUSCULO")
-            
-            time.sleep(1)
-            
-            for x in range(0,101):##COMO JUSTIFICO ESTE ENTRENAMIENTO????
-                
-                arduinoPort.write(flagCharacter.encode())
-
-                getSerialValue1 = arduinoPort.readline()
-                getSerialValue2 = arduinoPort.readline()
-                getSerialValue3 = arduinoPort.readline()
-                getSerialValue4 = arduinoPort.readline()
-                
-                print ('\nValor retornado de Arduino 1: %s',int(getSerialValue1))
-                print ('\nValor retornado de Arduino 2: %s',int(getSerialValue2))
-                print ('\nValor retornado de Arduino 3: %s',int(getSerialValue3))
-                print ('\nValor retornado de Arduino 4: %s',int(getSerialValue4))
-                
-                suma1[0]=suma1[0]+int(getSerialValue1)
-                suma1[1]=suma1[1]+int(getSerialValue2)
-                suma1[2]=suma1[2]+int(getSerialValue3)
-                suma1[3]=suma1[3]+int(getSerialValue4)
-                
-            print("CONTRAER MUSCULO")
-            
-            time.sleep(1)
-            
-            for x in range(0,101):##COMO JUSTIFICO ESTE ENTRENAMIENTO????
-                
-                arduinoPort.write(flagCharacter.encode())
-
-                getSerialValue1 = arduinoPort.readline()
-                getSerialValue2 = arduinoPort.readline()
-                getSerialValue3 = arduinoPort.readline()
-                getSerialValue4 = arduinoPort.readline()
-                
-                print ('\nValor retornado de Arduino 1: %s',int(getSerialValue1))
-                print ('\nValor retornado de Arduino 2: %s',int(getSerialValue2))
-                print ('\nValor retornado de Arduino 3: %s',int(getSerialValue3))
-                print ('\nValor retornado de Arduino 4: %s',int(getSerialValue4))
-            
-                suma2[0]=suma2[0]+int(getSerialValue1)
-                suma2[1]=suma2[1]+int(getSerialValue2)
-                suma2[2]=suma2[2]+int(getSerialValue3)
-                suma2[3]=suma2[3]+int(getSerialValue4)
-            ###############GUARDAR EN LA BASE DE DATOS#########
-            for x in range(0,4):
-                min[x]=suma1[x]/101
-                max[x]=suma2[x]/101
-                
-            for i in range(0,4):
-                print(min[i])
-                print(max[i])
-            print("FIN DEL ENTRENAMIENTO")
-
-            data_insert(min,anglemin)
-            data_insert(max,anglemax)
     return 0

@@ -2,9 +2,9 @@
 
 import time
 import serial
-from Libreria_tesis import *
+from Libreria_tesis3_c2 import *
 
-#####################CONSTANTES#####################edc
+#####################VARIABLES#####################
 
 #####################PROGRAMA#####################
 
@@ -17,10 +17,8 @@ arduinoPort = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
 
 time.sleep(1.8)
 
-while(True):
     
-  controller(arduinoPort)
-  ##controller2(arduinoPort)
+controller(arduinoPort)
         
 # Cerrando puerto serial
 arduinoPort.close()
